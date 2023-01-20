@@ -20,7 +20,7 @@ const db = new sqlite.Database(dbFile, (error) => {
 const getUserById = (request, response) => {
   // Parse the id to generate a SQLite query
   const id = parseInt(request.params.id);
-  const query = `SELECT * FROM user WHERE id = ?`;
+  const query = `SELECT * FROM user WHERE id = ?  `;
 
   // db.get will replace all ? in query sequentially with
   // items from the array passed as the second parameter
@@ -43,10 +43,60 @@ const getUserById = (request, response) => {
 
 // ----- FILL IN BELOW -----
 // Write and export the rest of the functions needed by index.js!
+const getAllUsers = (request, response) => {
+  const query = 'SELECT * FROM user';
+  db.all(query, (error, result) => {
+    if(error){
+      console.error(error.message);
+      response.status(400).json({error: error.message});
+      return;
+    }
+    if(result){
+      response.json(result);
+    }
+    else{
+      response.sendStatus(404);
+    }
+  })
+};
 
+const createNewUser = (request, response) => {
+  const name = request.body.name;
+  const query = 'INSERT INTO user(name) VALUES ' + name;
+  db.all(query, [name], (error, result) => {
+    if(error){
+      console.error(error.message);
+      response.status(400).json({error: error.message});
+      return;
+    }
+    if(result){
+      response.json(result);
+    }
+    else{
+      response.sendStatus(404);
+    }
+  })
+};
+
+const updateUser = (request, response) => {
+  const name = request.body.name
+  const id = request.body.id
+  const query = 'UPDATE user SET name = ? WHERE id = ?'
+  db.run(query, [name, id])
+}
+
+const deleteUser = (request, response) =>{
+  const id = request.body.id
+  const query = 'DELETE FROM user WHERE id = ?'
+  db.run(query, [id])
+}
 //#endregion Routes
 
 // This allows `index.js` to use functions defined in this file.
 module.exports = {
   getUserById,
+  getAllUsers,
+  createNewUser,
+  updateUser,
+  deleteUser
 };
